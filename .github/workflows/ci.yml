@@ -1,0 +1,21 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, windows-2019, macos-latest, ubuntu-latest]
+        build_type: [Debug, RelWithDebInfo]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+    - uses: aseprite/get-ninja@main
+    - name: Generating Makefiles
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    - name: Compiling
+      run: cmake --build build
+    - name: Running
+      shell: bash
+      run: build/bug
